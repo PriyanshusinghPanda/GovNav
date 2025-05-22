@@ -7,12 +7,14 @@ const UserModel = require("./models/User");
 const IssueModel = require("./models/Issue");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const cookieParser = require('cookie-parser');
 
 
 dotenv.config();
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
   origin: process.env.FRONTEND_URL,
