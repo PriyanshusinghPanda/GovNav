@@ -1,9 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const cors = require("cors")
 const UserModel = require("./models/User");
+const IssueModel = require("./models/Issue");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
@@ -13,17 +14,9 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-// app.use(
-//     cors({
-//       origin: "*",
-//       credentials: true,
-//     })
-//   );
 app.use(cors({
-    origin: '*',               // Allow all origins
-    credentials: true,         // Allow credentials
-    methods: ['*'],            // Allow all methods (GET, POST, etc.)
-    allowedHeaders: ['*']      // Allow all headers
+  origin: 'http://localhost:5173',
+  credentials: true
 }));
 app.use(
   session({
@@ -58,6 +51,24 @@ function sendOTP(email, otp) {
   // In a real implementation, you would use an email service here
   return true;
 }
+
+// Middleware to check if user is authenticated
+const isAuthenticated = (req, res, next) => {
+  if (req.session.user) {
+    next();
+  } else {
+    res.status(401).json({ message: "Unauthorized" });
+  }
+};
+
+// Middleware to check if user is a government employee
+const isGovEmployee = (req, res, next) => {
+  if (req.session.user && req.session.user.userType === 'gov_employee') {
+    next();
+  } else {
+    res.status(403).json({ message: "Access denied. Government employees only." });
+  }
+};
 
 app.get("/user", (req, res) => {
   if (req.session.user) {
@@ -155,10 +166,15 @@ app.post("/verify-otp", async (req, res) => {
 app.post("/signup", async (req, res) => {
   console.log("signup request received");
   try {
-    const { name, email, password, userType } = req.body;
+    const { name, email, password, userType, department } = req.body;
     
     if (!['citizen', 'gov_employee'].includes(userType)) {
       return res.status(400).json({ message: "Invalid user type" });
+    }
+
+    // Validate department for government employees
+    if (userType === 'gov_employee' && !department) {
+      return res.status(400).json({ message: "Department is required for government employees" });
     }
 
     const existingUser = await UserModel.findOne({ email });
@@ -172,6 +188,7 @@ app.post("/signup", async (req, res) => {
       email,
       password: hashedPassword,
       userType,
+      department: userType === 'gov_employee' ? department : undefined,
       isVerified: false
     });
 
@@ -244,6 +261,145 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Issues endpoints
+app.get("/issues", async (req, res) => {
+  try {
+    const { status } = req.query;
+    const query = status ? { status } : {};
+    const issues = await IssueModel.find(query).populate('reportedBy', 'name email');
+    res.json(issues);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/issues/:id", async (req, res) => {
+  try {
+    const issue = await IssueModel.findById(req.params.id).populate('reportedBy', 'name email');
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+    res.json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/issues", isAuthenticated, async (req, res) => {
+  try {
+    const { category, details, location } = req.body;
+
+    // Check for similar issues nearby (within 1km)
+    const similarIssues = await IssueModel.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: location.coordinates
+          },
+          $maxDistance: 1000 // 1km
+        }
+      },
+      category,
+      status: { $ne: 'resolved' }
+    });
+
+    if (similarIssues.length > 0) {
+      return res.status(400).json({ message: "Similar issue already reported nearby" });
+    }
+
+    const issue = new IssueModel({
+      category,
+      details,
+      location,
+      reportedBy: req.session.user.id
+    });
+
+    await issue.save();
+    res.status(201).json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.put("/issues/:id", isGovEmployee, async (req, res) => {
+  try {
+    const { status, resolutionDetails } = req.body;
+    const issue = await IssueModel.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.status = status;
+    if (status === 'resolved' && resolutionDetails) {
+      issue.resolutionDetails = resolutionDetails;
+    }
+
+    await issue.save();
+    res.json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/issues/:id/upvote", isAuthenticated, async (req, res) => {
+  try {
+    const issue = await IssueModel.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.upvotes += 1;
+    await issue.save();
+    res.json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/issues/:id/comments", isAuthenticated, async (req, res) => {
+  try {
+    const { text } = req.body;
+    const issue = await IssueModel.findById(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.comments.push({ text });
+    await issue.save();
+    res.json(issue);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+// Analytics endpoint
+app.get("/analytics", isGovEmployee, async (req, res) => {
+  try {
+    const stats = await IssueModel.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.listen(8080, () => {
-  console.log("server is running on port 5000");
+  console.log("server is running on port 8080");
 });

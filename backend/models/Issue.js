@@ -6,6 +6,10 @@ const issueSchema = new mongoose.Schema({
     required: true,
     enum: ['road', 'water', 'electricity', 'sanitation', 'other']
   },
+  details: {
+    type: String,
+    required: true
+  },
   location: {
     type: {
       type: String,
@@ -17,36 +21,38 @@ const issueSchema = new mongoose.Schema({
       required: true
     }
   },
-  details: {
-    type: String,
-    required: true
-  },
-  reportedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
   status: {
     type: String,
     enum: ['pending', 'acknowledged', 'in_progress', 'resolved'],
     default: 'pending'
   },
-  department: {
-    type: String,
-    required: true
-  },
   upvotes: {
     type: Number,
     default: 0
   },
-  resolutionDetails: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
+  comments: [{
+    text: {
+      type: String,
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  resolutionDetails: {
+    type: String
+  },
+  reportedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
+}, {
+  timestamps: true
 });
 
-// Create geospatial index
+// Create a 2dsphere index for geospatial queries
 issueSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Issue', issueSchema); 
