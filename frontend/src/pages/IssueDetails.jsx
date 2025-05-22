@@ -29,7 +29,7 @@ function IssueDetails() {
 
   const fetchIssue = async () => {
     try {
-      const response = await axios.get(`${process.env.BACKEND_URL}/issues/${id}`, {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/issues/${id}`, {
         withCredentials: true
       });
       setIssue(response.data);
@@ -42,7 +42,7 @@ function IssueDetails() {
 
   const handleUpvote = async () => {
     try {
-      await axios.post(`${process.env.BACKEND_URL}/issues/${id}/upvote`, {}, {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/issues/${id}/upvote`, {}, {
         withCredentials: true
       });
       fetchIssue();
@@ -54,7 +54,7 @@ function IssueDetails() {
   const handleComment = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${process.env.BACKEND_URL}/issues/${id}/comments`, {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/issues/${id}/comments`, {
         text: comment,
       }, {
         withCredentials: true

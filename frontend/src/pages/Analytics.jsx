@@ -31,10 +31,10 @@ function Analytics() {
   const fetchAnalytics = async () => {
     try {
       const [statsResponse, issuesResponse] = await Promise.all([
-        axios.get(`${process.env.BACKEND_URL}/analytics`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/analytics`, {
           withCredentials: true
         }),
-        axios.get(`${process.env.BACKEND_URL}/issues`, {
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/issues`, {
           withCredentials: true
         })
       ]);

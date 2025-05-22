@@ -31,7 +31,7 @@ function VerifyOTP() {
     setError('');
     setLoading(true);
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/verify-otp`, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/verify-otp`, {
         email,
         otp,
       });
@@ -54,7 +54,7 @@ function VerifyOTP() {
     setLoading(true);
 
     try {
-      await axios.post(`${process.env.BACKEND_URL}/request-otp`, { email });
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/request-otp`, { email });
       setSuccess('OTP has been resent to your email');
     } catch (error) {
       setError(error.response?.data?.message || 'Failed to resend OTP');

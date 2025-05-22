@@ -45,7 +45,7 @@ function Signup() {
 
     try {
       const { confirmPassword, ...signupData } = formData;
-      const response = await axios.post(`${process.env.BACKEND_URL}/signup`, signupData);
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/signup`, signupData);
       navigate('/verify-otp', { state: { email: formData.email } });
     } catch (error) {
       setError(error.response?.data?.message || 'Signup failed. Please try again.');

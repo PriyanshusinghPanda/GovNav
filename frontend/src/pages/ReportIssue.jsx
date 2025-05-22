@@ -69,7 +69,7 @@ function ReportIssue() {
     }
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/issues`, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/issues`, {
         ...formData,
         location: {
           type: 'Point',

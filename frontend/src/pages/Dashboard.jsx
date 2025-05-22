@@ -35,7 +35,7 @@ function Dashboard() {
 
   const fetchIssues = async () => {
     try {
-      const response = await axios.get(`${process.env.BACKEND_URL}/issues?status=${selectedStatus}`, {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/issues?status=${selectedStatus}`, {
         withCredentials: true
       });
       setIssues(response.data);
@@ -46,7 +46,7 @@ function Dashboard() {
 
   const handleStatusChange = async (issueId, newStatus) => {
     try {
-      await axios.put(`${process.env.BACKEND_URL}/issues/${issueId}`, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/issues/${issueId}`, {
         status: newStatus,
         resolutionDetails: newStatus === 'resolved' ? resolutionDetails : undefined,
       }, {
