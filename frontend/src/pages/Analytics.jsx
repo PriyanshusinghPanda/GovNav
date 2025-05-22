@@ -20,6 +20,7 @@ import {
 import axios from 'axios';
 
 function Analytics() {
+  // console.log(import.meta.env.VITE_BACKEND_URL);
   const [stats, setStats] = useState([]);
   const [issues, setIssues] = useState([]);
   const [timeRange, setTimeRange] = useState('week');
@@ -31,10 +32,10 @@ function Analytics() {
   const fetchAnalytics = async () => {
     try {
       const [statsResponse, issuesResponse] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/analytics`, {
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/analytics`, {
           withCredentials: true
         }),
-        axios.get(`${process.env.REACT_APP_BACKEND_URL}/issues`, {
+        axios.get(`${import.meta.env.VITE_BACKEND_URL}/issues`, {
           withCredentials: true
         })
       ]);

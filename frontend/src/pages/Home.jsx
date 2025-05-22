@@ -23,7 +23,7 @@ function Home() {
     // Fetch issues
     const fetchIssues = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/issues`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/issues`, {
           withCredentials: true
         });
         setIssues(response.data);
