@@ -23,7 +23,9 @@ function Home() {
     // Fetch issues
     const fetchIssues = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/issues');
+        const response = await axios.get(`${process.env.BACKEND_URL}/issues`, {
+          withCredentials: true
+        });
         setIssues(response.data);
       } catch (error) {
         console.error('Error fetching issues:', error);

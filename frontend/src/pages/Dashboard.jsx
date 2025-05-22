@@ -35,7 +35,9 @@ function Dashboard() {
 
   const fetchIssues = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/issues?status=${selectedStatus}`);
+      const response = await axios.get(`${process.env.BACKEND_URL}/issues?status=${selectedStatus}`, {
+        withCredentials: true
+      });
       setIssues(response.data);
     } catch (error) {
       console.error('Error fetching issues:', error);
@@ -44,9 +46,11 @@ function Dashboard() {
 
   const handleStatusChange = async (issueId, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/issues/${issueId}`, {
+      await axios.put(`${process.env.BACKEND_URL}/issues/${issueId}`, {
         status: newStatus,
         resolutionDetails: newStatus === 'resolved' ? resolutionDetails : undefined,
+      }, {
+        withCredentials: true
       });
       fetchIssues();
       setOpenDialog(false);

@@ -29,7 +29,9 @@ function IssueDetails() {
 
   const fetchIssue = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/issues/${id}`);
+      const response = await axios.get(`${process.env.BACKEND_URL}/issues/${id}`, {
+        withCredentials: true
+      });
       setIssue(response.data);
       setLoading(false);
     } catch (error) {
@@ -40,7 +42,9 @@ function IssueDetails() {
 
   const handleUpvote = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/issues/${id}/upvote`);
+      await axios.post(`${process.env.BACKEND_URL}/issues/${id}/upvote`, {}, {
+        withCredentials: true
+      });
       fetchIssue();
     } catch (error) {
       setError('Error upvoting issue');
@@ -50,8 +54,10 @@ function IssueDetails() {
   const handleComment = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`http://localhost:5000/api/issues/${id}/comments`, {
+      await axios.post(`${process.env.BACKEND_URL}/issues/${id}/comments`, {
         text: comment,
+      }, {
+        withCredentials: true
       });
       setComment('');
       setSuccess('Comment added successfully');

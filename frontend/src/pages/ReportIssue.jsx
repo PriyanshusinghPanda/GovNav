@@ -69,12 +69,14 @@ function ReportIssue() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/issues', {
+      const response = await axios.post(`${process.env.BACKEND_URL}/issues`, {
         ...formData,
         location: {
           type: 'Point',
           coordinates: [position[1], position[0]],
         },
+      }, {
+        withCredentials: true
       });
 
       if (response.data.message === 'Similar issue already reported nearby') {

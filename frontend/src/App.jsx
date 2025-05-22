@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import VerifyOTP from './pages/VerifyOTP';
 
 const theme = createTheme({
   palette: {
@@ -35,6 +36,7 @@ function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
           </Routes>
         </Layout>
       </Router>

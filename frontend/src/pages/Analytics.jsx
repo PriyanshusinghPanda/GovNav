@@ -31,8 +31,12 @@ function Analytics() {
   const fetchAnalytics = async () => {
     try {
       const [statsResponse, issuesResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/analytics'),
-        axios.get('http://localhost:5000/api/issues')
+        axios.get(`${process.env.BACKEND_URL}/analytics`, {
+          withCredentials: true
+        }),
+        axios.get(`${process.env.BACKEND_URL}/issues`, {
+          withCredentials: true
+        })
       ]);
       setStats(statsResponse.data);
       setIssues(issuesResponse.data);
