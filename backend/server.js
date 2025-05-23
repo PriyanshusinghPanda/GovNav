@@ -8,7 +8,16 @@ const IssueModel = require("./models/Issue");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const cookieParser = require('cookie-parser');
+const nodemailer = require('nodemailer');
 
+
+let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.SENDER_EMAIL,
+        pass: process.env.SENDER_PASSWORD, // Use an App Password if using Gmail
+    }
+});
 
 dotenv.config();
 
@@ -51,6 +60,18 @@ function generateOTP() {
 function sendOTP(email, otp) {
   console.log(`OTP for ${email}: ${otp}`);
   // In a real implementation, you would use an email service here
+  let mailOptions = {
+    from: `"Your Name" <${process.env.SENDER_EMAIL}>`,
+    to: email,
+    subject: 'OTP from govNav',
+    text: `Your govNav OTP is ${otp}. It's valid for 5 minutes.`,
+};
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        console.log('Error:', error);
+    }
+    console.log('Email sent:', info.response);
+});
   return true;
 }
 
@@ -199,6 +220,7 @@ app.post("/signup", async (req, res) => {
     // Generate and send OTP
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
     
     user.otp = {
       code: otp,
