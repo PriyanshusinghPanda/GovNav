@@ -61,7 +61,7 @@ function sendOTP(email, otp) {
   console.log(`OTP for ${email}: ${otp}`);
   // In a real implementation, you would use an email service here
   let mailOptions = {
-    from: `"Your Name" <${process.env.SENDER_EMAIL}>`,
+    from: `"GOVNAV - Officials" <${process.env.SENDER_EMAIL}>`,
     to: email,
     subject: 'OTP from govNav',
     text: `Your govNav OTP is ${otp}. It's valid for 5 minutes.`,
